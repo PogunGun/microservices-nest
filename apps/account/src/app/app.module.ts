@@ -1,11 +1,17 @@
 import { Module } from '@nestjs/common';
-
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from './auth/auth.module';
+import { getMongoConfig } from './configs/mongo.config';
+import { UserModule } from './user/user.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import {RMQModule} from "nestjs-rmq";
+import { getRMQConfig } from './configs/rmq.config';
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
-})
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: 'envs/.account.env' }),
+    RMQModule.forRootAsync(getRMQConfig()),
+    UserModule,
+    AuthModule,
+    MongooseModule.forRootAsync(getMongoConfig())
+  ],})
 export class AppModule {}

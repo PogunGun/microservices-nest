@@ -1,9 +1,9 @@
 import {Injectable} from '@nestjs/common';
-import {RegisterDto} from "./auth.controller";
 import {UserRepository} from "../user/repositories/user.repository";
 import {UserEntity} from "../user/entities/user.entity";
-import {UserRole} from "@purple/interface";
 import {JwtService} from "@nestjs/jwt";
+import { UserRole } from '@purple/interfaces';
+import {AccountRegister} from "@purple/contracts";
 
 @Injectable()
 export class AuthService {
@@ -13,7 +13,7 @@ export class AuthService {
   ) {
   }
 
-  async register({email, password, displayName}: RegisterDto) {
+  async register({email, password, displayName}: AccountRegister.Request){
     const oldUser = await this.userRepository.findUser(email);
     if (oldUser) {
       throw new Error('User is already exist')
@@ -28,17 +28,17 @@ export class AuthService {
     return {email: newUser.email}
   }
 
-  async validateUser(email:string,password:string):Promise<{ id:string }>{
+  async validateUser(email:string,password:string){
     const user = await this.userRepository.findUser(email);
-    if (!user){
-        throw new Error('Incorrect login or password')
+    if (!user) {
+      throw new Error('Неверный логин или пароль');
     }
     const userEntity = new UserEntity(user);
-    const isCorrectPassword = await userEntity.validationPassword(password);
-    if (!isCorrectPassword){
-      throw new Error('Incorrect login or password')
+    const isCorrectPassword = await userEntity.validatePassword(password);
+    if (!isCorrectPassword) {
+      throw new Error('Неверный логин или пароль');
     }
-    return {id:user._id}
+    return { id: user._id };
   }
   async login(id:string){
       return{
